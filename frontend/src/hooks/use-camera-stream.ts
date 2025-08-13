@@ -1,5 +1,19 @@
 import { useEffect, useRef, useState } from 'react'
-import type { CameraStreamState, UseCameraStreamProps } from '@/types/camera'
+
+interface UseCameraStreamProps {
+  wsUrl?: string
+  fallbackImageUrl?: string
+  cameraId?: number
+  enabled?: boolean
+}
+
+interface CameraStreamState {
+  imageSrc: string | null
+  isConnected: boolean
+  isConnecting: boolean
+  error: string | null
+  usingWebSocket: boolean
+}
 
 export function useCameraStream({
   wsUrl,
@@ -73,7 +87,9 @@ export function useCameraStream({
             imageSrc,
             usingWebSocket: true,
           }))
-        } catch (_error) {
+        } catch (error) {
+          console.error('Error parsing WebSocket message:', error)
+          // Try using event.data directly as fallback
           const imageSrc = `data:image/jpeg;base64,${event.data}`
           setState((prev) => ({
             ...prev,
@@ -93,14 +109,16 @@ export function useCameraStream({
         }))
       }
 
-      ws.onerror = (_error) => {
+      ws.onerror = (error) => {
+        console.error('Camera WebSocket error:', error)
         setState((prev) => ({
           ...prev,
           error: 'WebSocket connection error',
           imageSrc: fallbackImageUrl || '',
         }))
       }
-    } catch (_error) {
+    } catch (error) {
+      console.error('Failed to create WebSocket connection:', error)
       setState((prev) => ({
         ...prev,
         isConnecting: false,
@@ -138,7 +156,7 @@ export function useCameraStream({
     }
 
     return cleanup
-  }, [wsUrl, fallbackImageUrl, cameraId, enabled, connectWebSocket])
+  }, [wsUrl, fallbackImageUrl, cameraId, enabled])
 
   return state
 }

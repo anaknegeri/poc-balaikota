@@ -10,7 +10,7 @@ lerna-debug.log*
 node_modules
 .tanstack
 dist
-dist-ssr
+dist-ssrj
 *.local
 
 # Editor directories and files
