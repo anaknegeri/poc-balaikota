@@ -498,7 +498,7 @@ export const useAlerts = (
           filters
         )
 
-        setAlerts(data.alerts)
+        setAlerts(data.alerts ?? [])
         setTotal(data.total)
         setPages(data.pages)
 

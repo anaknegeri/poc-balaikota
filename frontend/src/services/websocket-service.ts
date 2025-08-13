@@ -40,7 +40,8 @@ class WebSocketService {
   private userID: string | null = null
 
   private getWebSocketUrl(): string {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'
+    const baseUrl =
+      import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002/api'
     const wsUrl = baseUrl.replace(/^http/, 'ws')
     return `${wsUrl}/ws`
   }
@@ -66,7 +67,6 @@ class WebSocketService {
       this.ws.onopen = () => {
         this.reconnectAttempts = 0
         this.isConnecting = false
-        console.log('WebSocket connected')
         this.emit('connected', { connected: true })
 
         // Subscribe to channels
@@ -97,7 +97,6 @@ class WebSocketService {
 
       this.ws.onclose = (event) => {
         this.isConnecting = false
-        console.log('WebSocket disconnected:', event.code, event.reason)
         this.emit('disconnected', { connected: false })
 
         // Attempt to reconnect if not a clean close
@@ -105,16 +104,12 @@ class WebSocketService {
           event.code !== 1000 &&
           this.reconnectAttempts < this.maxReconnectAttempts
         ) {
-          console.log(
-            `Scheduling reconnect attempt ${this.reconnectAttempts + 1}`
-          )
           this.scheduleReconnect()
         }
       }
 
       this.ws.onerror = (error) => {
         this.isConnecting = false
-        console.error('WebSocket error:', error)
         this.emit('error', { error })
       }
     } catch (_error) {
