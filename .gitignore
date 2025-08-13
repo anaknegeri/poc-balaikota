@@ -1,0 +1,13 @@
+# Log files
+*.log
+build-errors.log
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+data/
+data/*

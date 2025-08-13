@@ -1,0 +1,60 @@
+stages:
+  - deploy
+
+# Template untuk deploy API
+.deploy_base_template: &deploy_base_template
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk update
+    - apk add --no-cache git rsync openssh-client
+    - "which ssh-agent || ( apk add openssh-client )"
+    - eval $(ssh-agent -s)
+    - ssh-add <(echo "$RSA_DH137")
+    - mkdir -p ~/.ssh
+    - echo "HOST *" > ~/.ssh/config
+    - echo "StrictHostKeyChecking no" >> ~/.ssh/config
+    - cp $ENV_FILE .env
+    - rsync -ar .env $DEPLOY_USER@$DEPLOY_SERVER:$DEPLOY_PATH/$CI_PROJECT_NAME
+    - rsync -ar .env $DEPLOY_USER@$DEPLOY_SERVER:$DEPLOY_PATH/$CI_PROJECT_NAME/frontend
+
+  script:
+    - ssh -tt $DEPLOY_USER@$DEPLOY_SERVER
+      "
+      cd $DEPLOY_PATH/$CI_PROJECT_NAME &&
+      git checkout $CI_COMMIT_BRANCH &&
+      git pull --no-commit &&
+      $DOCKER_HOST_VAR &&
+      docker compose up -d --build $SERVICE_NAME &&
+      docker image prune -a -f &&
+      exit
+      "
+
+# Deploy Development Jobs
+Deploy API Service:
+  <<: *deploy_base_template
+  variables:
+    ENV_FILE: $ENV_MAIN
+    DEPLOY_SERVER: $IPADDRESS_DEVELOPMENT
+    DEPLOY_USER: $SSH_USER
+    DEPLOY_PATH: "/var/www/development/web/ai-team"
+    ENVIRONMENT: "development"
+    DOCKER_HOST_VAR: $DOCKER_HOST
+    SERVICE_NAME: pln-api
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+
+Deploy Frontend:
+  <<: *deploy_base_template
+  variables:
+    ENV_FILE: $ENV_MAIN
+    DEPLOY_SERVER: $IPADDRESS_DEVELOPMENT
+    DEPLOY_USER: $SSH_USER
+    DEPLOY_PATH: "/var/www/development/web/ai-team"
+    ENVIRONMENT: "development"
+    DOCKER_HOST_VAR: $DOCKER_HOST
+    SERVICE_NAME: pln-frontend
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
