@@ -42,7 +42,7 @@ class WebSocketService {
   private getWebSocketUrl(): string {
     const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'
     const wsUrl = baseUrl.replace(/^http/, 'ws')
-    return `${wsUrl}/api/ws`
+    return `${wsUrl}/ws`
   }
 
   async connect(): Promise<void> {
