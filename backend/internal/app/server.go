@@ -145,6 +145,12 @@ func (s *Server) initializeSyncManager() error {
 		}
 	}
 
+	// Create images directory for face recognition
+	faceImagesDir := filepath.Join(faceRecognitionDataDir, "images")
+	if err := os.MkdirAll(faceImagesDir, 0755); err != nil {
+		return fmt.Errorf("failed to create face images directory %s: %v", faceImagesDir, err)
+	}
+
 	// Get repositories - use the ones already created in registerRoutes to avoid duplication
 	cameraRepository := postgres.NewCameraRepository(s.db)
 	alertTypeRepository := postgres.NewAlertTypeRepository(s.db)
@@ -270,12 +276,26 @@ func (s *Server) registerRoutes() {
 	}()
 
 	// Set up static file serving
-	faceImagesPath := filepath.Join(s.config.DataDirectories.Root, s.config.DataDirectories.FaceRecognitionDir, "images")
+	dataRootDir := s.config.DataDirectories.Root
+
+	// If data root is not absolute, make it relative to the current directory
+	if !filepath.IsAbs(dataRootDir) {
+		currentDir, err := os.Getwd()
+		if err != nil {
+			log.Printf("WARNING: Failed to get current directory for static files: %v", err)
+			dataRootDir = s.config.DataDirectories.Root
+		} else {
+			dataRootDir = filepath.Join(currentDir, dataRootDir)
+		}
+	}
+
+	faceImagesPath := filepath.Join(dataRootDir, s.config.DataDirectories.FaceRecognitionDir, "images")
+	log.Printf("Setting up static file serving for faces: route='/images/faces' -> path='%s'", faceImagesPath)
 	api.Static("/images/faces", faceImagesPath)
 
 	// Create static routes for each alert type
 	for alertType, folderPath := range alertTypeFolders {
-		basePath := filepath.Join(s.config.DataDirectories.Root, folderPath)
+		basePath := filepath.Join(dataRootDir, folderPath)
 		routePath := fmt.Sprintf("/images/alerts/%s", alertType)
 
 		// Try both "image" and "images" folders, prioritize the one with files
@@ -308,7 +328,7 @@ func (s *Server) registerRoutes() {
 	}
 
 	// Keep backward compatibility - serve general alerts folder
-	alertBasePath := filepath.Join(s.config.DataDirectories.Root, s.config.DataDirectories.AlertDir)
+	alertBasePath := filepath.Join(dataRootDir, s.config.DataDirectories.AlertDir)
 	var generalAlertImagesPath string
 
 	// Try both "image" and "images" folders for general alerts, prioritize the one with files
