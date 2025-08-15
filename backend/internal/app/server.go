@@ -225,7 +225,7 @@ func (s *Server) registerRoutes() {
 
 	// Initialize WebSocket handler
 	webSocketHandler := handler.NewWebSocketHandler()
-	
+
 	// Initialize WebSocket service
 	s.webSocketService = service.NewWebSocketService(webSocketHandler)
 
@@ -270,7 +270,7 @@ func (s *Server) registerRoutes() {
 	}()
 
 	// Set up static file serving
-	faceImagesPath := filepath.Join(s.config.DataDirectories.Root, s.config.DataDirectories.FaceRecognitionDir, "image")
+	faceImagesPath := filepath.Join(s.config.DataDirectories.Root, s.config.DataDirectories.FaceRecognitionDir, "images")
 	api.Static("/images/faces", faceImagesPath)
 
 	// Create static routes for each alert type
