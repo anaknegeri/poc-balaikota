@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as pagesRouteRouteImport } from './routes/(pages)/route'
 import { Route as pagesIndexRouteImport } from './routes/(pages)/index'
+import { Route as pagesFaceRecognitionRouteImport } from './routes/(pages)/face-recognition'
 import { Route as pagesCamerasRouteImport } from './routes/(pages)/cameras'
 import { Route as pagesAlertsRouteImport } from './routes/(pages)/alerts'
 import { Route as errors503RouteImport } from './routes/(errors)/503'
@@ -26,6 +27,11 @@ const pagesRouteRoute = pagesRouteRouteImport.update({
 const pagesIndexRoute = pagesIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => pagesRouteRoute,
+} as any)
+const pagesFaceRecognitionRoute = pagesFaceRecognitionRouteImport.update({
+  id: '/face-recognition',
+  path: '/face-recognition',
   getParentRoute: () => pagesRouteRoute,
 } as any)
 const pagesCamerasRoute = pagesCamerasRouteImport.update({
@@ -73,6 +79,7 @@ export interface FileRoutesByFullPath {
   '/503': typeof errors503Route
   '/alerts': typeof pagesAlertsRoute
   '/cameras': typeof pagesCamerasRoute
+  '/face-recognition': typeof pagesFaceRecognitionRoute
 }
 export interface FileRoutesByTo {
   '/401': typeof errors401Route
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/503': typeof errors503Route
   '/alerts': typeof pagesAlertsRoute
   '/cameras': typeof pagesCamerasRoute
+  '/face-recognition': typeof pagesFaceRecognitionRoute
   '/': typeof pagesIndexRoute
 }
 export interface FileRoutesById {
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/(errors)/503': typeof errors503Route
   '/(pages)/alerts': typeof pagesAlertsRoute
   '/(pages)/cameras': typeof pagesCamerasRoute
+  '/(pages)/face-recognition': typeof pagesFaceRecognitionRoute
   '/(pages)/': typeof pagesIndexRoute
 }
 export interface FileRouteTypes {
@@ -107,8 +116,18 @@ export interface FileRouteTypes {
     | '/503'
     | '/alerts'
     | '/cameras'
+    | '/face-recognition'
   fileRoutesByTo: FileRoutesByTo
-  to: '/401' | '/403' | '/404' | '/500' | '/503' | '/alerts' | '/cameras' | '/'
+  to:
+    | '/401'
+    | '/403'
+    | '/404'
+    | '/500'
+    | '/503'
+    | '/alerts'
+    | '/cameras'
+    | '/face-recognition'
+    | '/'
   id:
     | '__root__'
     | '/(pages)'
@@ -119,6 +138,7 @@ export interface FileRouteTypes {
     | '/(errors)/503'
     | '/(pages)/alerts'
     | '/(pages)/cameras'
+    | '/(pages)/face-recognition'
     | '/(pages)/'
   fileRoutesById: FileRoutesById
 }
@@ -145,6 +165,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof pagesIndexRouteImport
+      parentRoute: typeof pagesRouteRoute
+    }
+    '/(pages)/face-recognition': {
+      id: '/(pages)/face-recognition'
+      path: '/face-recognition'
+      fullPath: '/face-recognition'
+      preLoaderRoute: typeof pagesFaceRecognitionRouteImport
       parentRoute: typeof pagesRouteRoute
     }
     '/(pages)/cameras': {
@@ -202,12 +229,14 @@ declare module '@tanstack/react-router' {
 interface pagesRouteRouteChildren {
   pagesAlertsRoute: typeof pagesAlertsRoute
   pagesCamerasRoute: typeof pagesCamerasRoute
+  pagesFaceRecognitionRoute: typeof pagesFaceRecognitionRoute
   pagesIndexRoute: typeof pagesIndexRoute
 }
 
 const pagesRouteRouteChildren: pagesRouteRouteChildren = {
   pagesAlertsRoute: pagesAlertsRoute,
   pagesCamerasRoute: pagesCamerasRoute,
+  pagesFaceRecognitionRoute: pagesFaceRecognitionRoute,
   pagesIndexRoute: pagesIndexRoute,
 }
 

@@ -153,16 +153,12 @@ export const dashboardService = {
   // Face Recognition APIs
   async getFaceRecognitions(
     page: number = 1,
-    limit: number = 10,
-    dateRange?: DateRange
+    limit: number = 10
   ): Promise<FaceRecognitionData> {
-    const queryParams = buildQueryParams(
-      {
-        page,
-        limit,
-      },
-      dateRange
-    )
+    const queryParams = buildQueryParams({
+      page,
+      limit,
+    })
     const response = await fetch(
       `${config.API_BASE_URL}/recognitions${queryParams}`
     )

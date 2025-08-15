@@ -1,9 +1,7 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import type { Alert } from '@/types/dashboard'
 import {
   Activity,
-  AlertTriangle,
   Baby,
   Calendar,
   Camera,
@@ -27,7 +25,6 @@ import {
 } from 'recharts'
 import { useCameras } from '@/hooks/use-cameras'
 import { useDashboardData, type DateRange } from '@/hooks/use-dashboard'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -103,8 +100,8 @@ function SummaryCard({
             <div className='flex items-center gap-3'>
               <div
                 className={`rounded-xl p-3 transition-colors duration-300 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 ${
-                  title.includes('Alert')
-                    ? 'bg-red-50 dark:bg-red-900/20'
+                  title.includes('Face Recognition')
+                    ? 'bg-blue-50 dark:bg-blue-900/20'
                     : title.includes('Camera')
                       ? 'bg-blue-50 dark:bg-blue-900/20'
                       : 'bg-green-50 dark:bg-green-900/20'
@@ -112,8 +109,8 @@ function SummaryCard({
               >
                 <Icon
                   className={`h-5 w-5 transition-colors duration-300 ${
-                    title.includes('Alert')
-                      ? 'text-red-600 dark:text-red-400'
+                    title.includes('Face Recognition')
+                      ? 'text-blue-600 dark:text-blue-400'
                       : title.includes('Camera')
                         ? 'text-blue-600 dark:text-blue-400'
                         : 'text-green-600 dark:text-green-400'
@@ -618,7 +615,7 @@ function PeakHoursAnalysisChart({
   )
 }
 
-function RecentAlertsCard({
+function RecentFaceRecognitionCard({
   data,
   loading,
   onImageClick,
@@ -631,32 +628,19 @@ function RecentAlertsCard({
     return <LoadingCard />
   }
 
-  const alertsData = data?.activeAlert?.data || []
-
-  const getSeverityBadge = (severity: string) => {
-    switch (severity) {
-      case 'high':
-        return 'destructive'
-      case 'medium':
-        return 'default'
-      case 'low':
-        return 'secondary'
-      default:
-        return 'default'
-    }
-  }
+  const faceRecognitionData = data?.faceRecognitions?.data || []
 
   return (
     <Card>
       <CardHeader className='pb-3'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-3'>
-            <div className='rounded-lg bg-red-50 p-2 dark:bg-red-900/20'>
-              <AlertTriangle className='h-5 w-5 text-red-600 dark:text-red-400' />
+            <div className='rounded-lg bg-blue-50 p-2 dark:bg-blue-900/20'>
+              <UserCheck className='h-5 w-5 text-blue-600 dark:text-blue-400' />
             </div>
             <div>
               <CardTitle className='text-lg font-semibold text-gray-900 dark:text-white'>
-                Security Alerts
+                Face Recognition
               </CardTitle>
             </div>
           </div>
@@ -670,20 +654,20 @@ function RecentAlertsCard({
       </CardHeader>
       <CardContent className='pt-0'>
         <div className='max-h-80 space-y-3 overflow-y-auto pr-2'>
-          {(alertsData || []).map((alert: Alert) => (
+          {(faceRecognitionData || []).map((recognition: any) => (
             <div
-              key={alert.id}
+              key={recognition.ID}
               className='rounded-lg border border-gray-200 p-3 dark:border-gray-700'
             >
               <div className='flex items-start gap-3'>
-                {/* Alert Thumbnail */}
+                {/* Face Recognition Thumbnail */}
                 <div className='h-12 w-16 flex-shrink-0 overflow-hidden rounded-md bg-gray-100 dark:bg-gray-800'>
-                  {alert.image_url ? (
+                  {recognition.image_url ? (
                     <img
-                      src={alert.image_url}
-                      alt={`Alert ${alert.id}`}
+                      src={recognition.image_url}
+                      alt={`Face Recognition ${recognition.object_name}`}
                       className='h-full w-full cursor-pointer object-cover transition-transform hover:scale-105'
-                      onClick={() => onImageClick(alert.image_url)}
+                      onClick={() => onImageClick(recognition.image_url)}
                       onError={(e) => {
                         const target = e.target as HTMLImageElement
                         target.style.display = 'none'
@@ -692,7 +676,7 @@ function RecentAlertsCard({
                           parent.innerHTML = `
                             <div class="flex h-full w-full items-center justify-center bg-gray-200 dark:bg-gray-700">
                               <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                               </svg>
                             </div>
                           `
@@ -701,7 +685,7 @@ function RecentAlertsCard({
                     />
                   ) : (
                     <div className='flex h-full w-full items-center justify-center bg-gray-200 dark:bg-gray-700'>
-                      <Camera className='h-4 w-4 text-gray-400' />
+                      <UserCheck className='h-4 w-4 text-gray-400' />
                     </div>
                   )}
                 </div>
@@ -710,25 +694,21 @@ function RecentAlertsCard({
                   <div className='flex items-start justify-between gap-3'>
                     <div className='flex-1'>
                       <h4 className='text-sm font-medium text-gray-900 dark:text-white'>
-                        {alert.alert_type?.display_name}
+                        {recognition.object_name || 'Unknown Person'}
                       </h4>
                       <p className='mt-1 text-xs text-gray-600 dark:text-gray-400'>
-                        {alert.message}
+                        Face detected and recognized
                       </p>
                     </div>
-                    <Badge
-                      variant={getSeverityBadge(alert.severity) as any}
-                      className='text-xs'
-                    >
-                      {alert.severity}
-                    </Badge>
+                    <div className='rounded-full bg-green-100 px-2 py-1 dark:bg-green-900/20'>
+                      <span className='text-xs font-medium text-green-600 dark:text-green-400'>
+                        Detected
+                      </span>
+                    </div>
                   </div>
                   <div className='mt-2 flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400'>
-                    <span>
-                      {alert.camera?.name || `Camera ${alert.camera_id}`}
-                    </span>
-                    <span>{alert.camera?.location}</span>
-                    <span>{new Date(alert.detected_at).toLocaleString()}</span>
+                    <span>Camera {recognition.camera_id}</span>
+                    <span>{new Date(recognition.detected_at).toLocaleString()}</span>
                   </div>
                 </div>
               </div>
@@ -757,8 +737,7 @@ export default function Dashboard() {
 
   const { cameras, loading: loadingCamera } = useCameras('active')
 
-  const activeAlertsCount =
-    data.activeAlert?.data?.filter((alert) => alert.is_active).length || 0
+  const activeFaceRecognitionCount = data.faceRecognitions?.count || 0
 
   // Image viewer modal
   const ImageModal = ({
@@ -860,12 +839,12 @@ export default function Dashboard() {
             description='Compared to yesterday'
           />
           <SummaryCard
-            title='Active Security Alerts'
-            value={activeAlertsCount.toString()}
-            icon={AlertTriangle}
-            trend={activeAlertsCount > 0 ? 'up' : 'down'}
-            trendValue={activeAlertsCount > 0 ? `+${activeAlertsCount}` : '0'}
-            description='Recent incidents'
+            title='Active Face Recognition'
+            value={activeFaceRecognitionCount.toString()}
+            icon={UserCheck}
+            trend={activeFaceRecognitionCount > 0 ? 'up' : 'down'}
+            trendValue={activeFaceRecognitionCount > 0 ? `+${activeFaceRecognitionCount}` : '0'}
+            description='Recent detections'
           />
           <SummaryCard
             title='Active Cameras'
@@ -885,7 +864,7 @@ export default function Dashboard() {
         {/* Charts Grid */}
         <div className='grid grid-cols-2 gap-4'>
           <VisitorDistributionCard data={data} loading={loading} />
-          <RecentAlertsCard
+          <RecentFaceRecognitionCard
             data={data}
             loading={loading}
             onImageClick={setSelectedImage}

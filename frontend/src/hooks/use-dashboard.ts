@@ -83,11 +83,7 @@ export const useDashboardData = (
         ] = await Promise.all([
           dashboardService.getPeopleCountSummary(dateRange),
           dashboardService.getVehicleCountSummary(dateRange),
-          dashboardService.getFaceRecognitions(
-            1,
-            config.CHART_LIMITS.ALERTS,
-            dateRange
-          ),
+          dashboardService.getFaceRecognitions(1, config.CHART_LIMITS.ALERTS),
           dashboardService.getPeopleCountTrends(
             'hour',
             config.CHART_LIMITS.TRENDS,
