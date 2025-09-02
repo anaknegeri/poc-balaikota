@@ -25,6 +25,7 @@ import {
 } from 'recharts'
 import { useCameras } from '@/hooks/use-cameras'
 import { useDashboardData, type DateRange } from '@/hooks/use-dashboard'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -402,9 +403,9 @@ function VisitorDistributionCard({
               <div className='text-sm font-bold text-gray-900 dark:text-white'>
                 {visitorStats?.male || 0}
               </div>
-              <div className='text-xs text-gray-500 dark:text-gray-400'>
+              <Badge variant='outline' className='mt-1 text-xs'>
                 Real-time
-              </div>
+              </Badge>
             </div>
           </div>
 
@@ -419,9 +420,9 @@ function VisitorDistributionCard({
               <div className='text-sm font-bold text-gray-900 dark:text-white'>
                 {visitorStats?.female || 0}
               </div>
-              <div className='text-xs text-gray-500 dark:text-gray-400'>
+              <Badge variant='outline' className='mt-1 text-xs'>
                 Real-time
-              </div>
+              </Badge>
             </div>
           </div>
         </div>
@@ -439,9 +440,9 @@ function VisitorDistributionCard({
               <div className='text-sm font-bold text-gray-900 dark:text-white'>
                 {visitorStats?.child || 0}
               </div>
-              <div className='text-xs text-gray-500 dark:text-gray-400'>
+              <Badge variant='outline' className='mt-1 text-xs'>
                 Real-time
-              </div>
+              </Badge>
             </div>
           </div>
 
@@ -456,9 +457,9 @@ function VisitorDistributionCard({
               <div className='text-sm font-bold text-gray-900 dark:text-white'>
                 {visitorStats?.adult || 0}
               </div>
-              <div className='text-xs text-gray-500 dark:text-gray-400'>
+              <Badge variant='outline' className='mt-1 text-xs'>
                 Real-time
-              </div>
+              </Badge>
             </div>
           </div>
 
@@ -473,9 +474,9 @@ function VisitorDistributionCard({
               <div className='text-sm font-bold text-gray-900 dark:text-white'>
                 {visitorStats?.elderly || 0}
               </div>
-              <div className='text-xs text-gray-500 dark:text-gray-400'>
+              <Badge variant='outline' className='mt-1 text-xs'>
                 Real-time
-              </div>
+              </Badge>
             </div>
           </div>
         </div>
@@ -493,9 +494,9 @@ function VisitorDistributionCard({
               <div className='text-lg font-bold text-gray-900 dark:text-white'>
                 {visitorStats?.total || 0}
               </div>
-              <div className='text-xs text-gray-500 dark:text-gray-400'>
+              <Badge variant='secondary' className='mt-1 text-xs'>
                 Real-time data
-              </div>
+              </Badge>
             </div>
           </div>
         </div>
@@ -738,16 +739,16 @@ function RecentAlertsCard({
 
   const alertsData = data?.activeAlert?.data || []
 
-  const getSeverityColor = (severity: string) => {
+  const getSeverityVariant = (severity: string) => {
     switch (severity?.toLowerCase()) {
       case 'high':
-        return 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400'
+        return 'destructive'
       case 'medium':
-        return 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-400'
+        return 'secondary'
       case 'low':
-        return 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
+        return 'outline'
       default:
-        return 'bg-gray-100 text-gray-600 dark:bg-gray-900/20 dark:text-gray-400'
+        return 'outline'
     }
   }
 
@@ -803,7 +804,7 @@ function RecentAlertsCard({
                   {alert.image_url ? (
                     <img
                       src={alert.image_url}
-                      alt={`Alert ${alert.alert_type?.name}`}
+                      alt={`Alert ${alert.alert_type?.display_name}`}
                       className='h-full w-full cursor-pointer object-cover transition-transform hover:scale-105'
                       onClick={() => onImageClick(alert.image_url)}
                       onError={(e) => {
@@ -823,7 +824,7 @@ function RecentAlertsCard({
                     />
                   ) : (
                     <div className='flex h-full w-full items-center justify-center bg-gray-200 text-lg dark:bg-gray-700'>
-                      {getAlertIcon(alert.alert_type?.name)}
+                      {getAlertIcon(alert.alert_type?.display_name)}
                     </div>
                   )}
                 </div>
@@ -832,27 +833,26 @@ function RecentAlertsCard({
                   <div className='flex items-start justify-between gap-3'>
                     <div className='flex-1'>
                       <h4 className='text-sm font-medium text-gray-900 dark:text-white'>
-                        {alert.alert_type?.name || 'Unknown Alert'}
+                        {alert.alert_type?.display_name || 'Unknown Alert'}
                       </h4>
                       <p className='mt-1 line-clamp-2 text-xs text-gray-600 dark:text-gray-400'>
                         {alert.message || 'Alert detected'}
                       </p>
                     </div>
-                    <div
-                      className={`rounded-full px-2 py-1 ${getSeverityColor(alert.severity)}`}
-                    >
-                      <span className='text-xs font-medium'>
-                        {alert.severity || 'Medium'}
-                      </span>
-                    </div>
+                    <Badge variant={getSeverityVariant(alert.severity)}>
+                      {alert.severity || 'Medium'}
+                    </Badge>
                   </div>
                   <div className='mt-2 flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400'>
                     <span>Camera {alert.camera_id}</span>
                     <span>{new Date(alert.detected_at).toLocaleString()}</span>
                     {alert.is_active && (
-                      <span className='rounded-full bg-green-100 px-2 py-0.5 text-green-600 dark:bg-green-900/20 dark:text-green-400'>
+                      <Badge
+                        variant='default'
+                        className='border-green-200 bg-green-100 text-green-600 dark:border-green-800 dark:bg-green-900/20 dark:text-green-400'
+                      >
                         Active
-                      </span>
+                      </Badge>
                     )}
                   </div>
                 </div>
