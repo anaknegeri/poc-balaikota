@@ -42,7 +42,7 @@ export function BaseLayout() {
   const alertNotifications = recentAlerts.map((alert, index) => ({
     id: alert.id || `alert-${index}`,
     type: alert.data?.alert_type || alert.alert_type || 'security',
-    title: `${alert.data?.alert_type || alert.alert_type || 'Security'} Alert`,
+    title: `${alert.data?.data?.alert_type?.display_name || alert.data?.alert_type || alert.alert_type || 'Security'} Alert`,
     description: `${alert.data?.message || alert.message} - ${alert.data?.camera_name || alert.camera_name}`,
     time: alert.timestamp
       ? new Date(alert.timestamp).toLocaleString()

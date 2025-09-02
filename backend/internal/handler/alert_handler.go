@@ -633,6 +633,48 @@ func (h *AlertHandler) ProcessFileWithType(filePath string, alertType string) er
 		}
 	}
 
+	// Send WebSocket notification after successful alert creation/update
+	if h.webSocketService != nil {
+		// Get camera name for notification
+		cameraName := ""
+		if alert.Camera != nil {
+			cameraName = alert.Camera.Name
+		} else {
+			cameraName = fmt.Sprintf("Camera %d", alert.CameraID)
+		}
+
+		// Get alert type name for notification
+		alertTypeName := ""
+		if alert.AlertType.Name != "" {
+			alertTypeName = alert.AlertType.Name
+		} else {
+			alertTypeName = finalAlertType
+		}
+
+		// Create response data for WebSocket notification
+		alertResponse := AlertResponse{
+			ID:             alert.ID,
+			AlertTypeID:    alert.AlertTypeID,
+			CameraID:       alert.CameraID,
+			Message:        alert.Message,
+			Severity:       alert.Severity,
+			IsActive:       alert.IsActive,
+			DetectedAt:     alert.DetectedAt,
+			ResolvedAt:     alert.ResolvedAt,
+			ResolvedBy:     alert.ResolvedBy,
+			ResolutionNote: alert.ResolutionNote,
+			ImagePath:      alert.ImageURL,
+			ImageURL:       alert.ImageURL,
+			CreatedAt:      alert.CreatedAt,
+			UpdatedAt:      alert.UpdatedAt,
+			AlertType:      &alert.AlertType,
+			Camera:         alert.Camera,
+		}
+
+		// Send WebSocket notification
+		h.webSocketService.NotifyAlert(alertTypeName, cameraName, alert.Message, alertResponse)
+	}
+
 	return nil
 }
 

@@ -23,11 +23,11 @@ export function useWebSocketConnection() {
 
     // Listen for alert events
     const handleAlert = (alertData: any) => {
-      setRecentAlerts(prev => {
+      setRecentAlerts((prev) => {
         const newAlert = {
           ...alertData,
           timestamp: alertData.timestamp || new Date().toISOString(),
-          id: alertData.id || Date.now().toString()
+          id: alertData.id || Date.now().toString(),
         }
         // Keep only last 10 alerts
         return [newAlert, ...prev.slice(0, 9)]
