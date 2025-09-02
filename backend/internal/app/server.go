@@ -30,6 +30,7 @@ var alertTypeFolders = map[string]string{
 	"fall-detection":                "fall_log",
 	"loitering":                     "loitering",
 	"personal-protective-equipment": "safety_log",
+	"fire-smoke-detection":          "fire_smoke",
 }
 
 // Server represents the API server

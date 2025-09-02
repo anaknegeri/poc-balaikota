@@ -20,7 +20,7 @@ services:
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./db/init.sh:/docker-entrypoint-initdb.d/init.sh
     networks:
-      - people_counting_network
+      - ai_network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -42,7 +42,7 @@ services:
       - SERVER_PORT=${SERVER_PORT}
       - DATABASE_URL=${DATABASE_URL}
     networks:
-      - people_counting_network
+      - ai_network
     depends_on:
       postgres:
         condition: service_healthy
@@ -71,11 +71,11 @@ services:
     ports:
       - "${FRONTEND_PORT:-3000}:80"
     networks:
-      - people_counting_network
+      - ai_network
 
 volumes:
   postgres_data:
 
 networks:
-  people_counting_network:
+  ai_network:
     driver: bridge
