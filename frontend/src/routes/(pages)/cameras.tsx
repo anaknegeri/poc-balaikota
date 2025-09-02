@@ -1,12 +1,7 @@
 import { useMemo, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import type { Camera as CameraType } from '@/types/camera'
-import {
-  AlertTriangle,
-  Camera,
-  Maximize,
-  RefreshCw,
-} from 'lucide-react'
+import { AlertTriangle, Camera, Maximize, RefreshCw } from 'lucide-react'
 import { useCameras } from '@/hooks/use-cameras'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -58,12 +53,7 @@ function CamerasPage() {
     null
   )
 
-  const {
-    cameras: apiCameras,
-    loading,
-    error,
-    refetch,
-  } = useCameras()
+  const { cameras: apiCameras, loading, error, refetch } = useCameras('active')
 
   // Convert API cameras to display format
   const cameras = useMemo(() => {
@@ -366,7 +356,6 @@ function CamerasPage() {
       </div>
 
       {/* Results Info */}
-
     </div>
   )
 }

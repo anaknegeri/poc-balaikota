@@ -118,7 +118,7 @@ export const useDashboardData = (
           isInitialLoadRef.current = false
         }
       } catch (error) {
-        console.error('Error fetching dashboard data:', error)
+        // console.error('Error fetching dashboard data:', error)
         setState((prev) => ({
           ...prev,
           loading: false,
@@ -395,6 +395,7 @@ export const useActiveAlerts = (
   const isInitialLoadRef = useRef(true)
 
   const [alerts, setAlerts] = useState<Alert[] | null>(null)
+  const [count, setCount] = useState<number>(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -408,6 +409,7 @@ export const useActiveAlerts = (
 
         const data = await dashboardService.getActiveAlerts(dateRange)
         setAlerts(data.data)
+        setCount(data.count)
 
         if (isInitialLoadRef.current) {
           isInitialLoadRef.current = false
@@ -448,6 +450,7 @@ export const useActiveAlerts = (
 
   return {
     alerts,
+    count,
     loading: loading && isInitialLoadRef.current,
     error,
     refetch: () => fetchAlerts(true),

@@ -128,7 +128,7 @@ function AlertsPage() {
   )
 
   const {
-    alerts: activeAlerts,
+    count: activeAlertsCount,
     loading: _loadingActive,
     refetch: refetchActive,
   } = useActiveAlerts()
@@ -136,12 +136,13 @@ function AlertsPage() {
   // Alert statistics
   const alertStats = useMemo(() => {
     const totalAlerts = total
-    const activeCount = activeAlerts?.length || 0
+    // Use the count from active alerts response instead of array length
+    const activeCount = activeAlertsCount || 0
     const criticalCount = alerts.filter((a) => a.severity === 'high').length
     const resolvedCount = alerts.filter((a) => a.resolved_at !== null).length
 
     return { totalAlerts, activeCount, criticalCount, resolvedCount }
-  }, [alerts, activeAlerts, total])
+  }, [alerts, activeAlertsCount, total])
 
   // Get severity badge variant
   const getSeverityBadge = (severity: string) => {

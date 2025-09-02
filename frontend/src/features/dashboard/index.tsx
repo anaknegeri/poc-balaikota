@@ -615,6 +615,8 @@ function PeakHoursAnalysisChart({
   )
 }
 
+// Face Recognition Card - commented out, replaced with Recent Alerts
+/*
 function RecentFaceRecognitionCard({
   data,
   loading,
@@ -660,7 +662,6 @@ function RecentFaceRecognitionCard({
               className='rounded-lg border border-gray-200 p-3 dark:border-gray-700'
             >
               <div className='flex items-start gap-3'>
-                {/* Face Recognition Thumbnail */}
                 <div className='h-12 w-16 flex-shrink-0 overflow-hidden rounded-md bg-gray-100 dark:bg-gray-800'>
                   {recognition.image_url ? (
                     <img
@@ -719,6 +720,155 @@ function RecentFaceRecognitionCard({
     </Card>
   )
 }
+*/
+
+// New Recent Alerts Card
+function RecentAlertsCard({
+  data,
+  loading,
+  onImageClick,
+}: {
+  data: any
+  loading: boolean
+  onImageClick: (image: string) => void
+}) {
+  if (loading) {
+    return <LoadingCard />
+  }
+
+  const alertsData = data?.activeAlert?.data || []
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity?.toLowerCase()) {
+      case 'high':
+        return 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400'
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-400'
+      case 'low':
+        return 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
+      default:
+        return 'bg-gray-100 text-gray-600 dark:bg-gray-900/20 dark:text-gray-400'
+    }
+  }
+
+  const getAlertIcon = (alertType: string) => {
+    switch (alertType?.toLowerCase()) {
+      case 'fire-smoke-detection':
+        return '🔥'
+      case 'fall-detection':
+        return '🚨'
+      case 'loitering':
+        return '⏰'
+      case 'personal-protective-equipment':
+        return '🦺'
+      case 'restricted':
+        return '🚫'
+      default:
+        return '⚠️'
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader className='pb-3'>
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center gap-3'>
+            <div className='rounded-lg bg-red-50 p-2 dark:bg-red-900/20'>
+              <Shield className='h-5 w-5 text-red-600 dark:text-red-400' />
+            </div>
+            <div>
+              <CardTitle className='text-lg font-semibold text-gray-900 dark:text-white'>
+                Recent Alerts
+              </CardTitle>
+            </div>
+          </div>
+          <Link to='/alerts'>
+            <Button variant='outline' size='sm'>
+              <Eye className='mr-2 h-4 w-4' />
+              View All
+            </Button>
+          </Link>
+        </div>
+      </CardHeader>
+      <CardContent className='pt-0'>
+        <div className='max-h-80 space-y-3 overflow-y-auto pr-2'>
+          {(alertsData || []).slice(0, 5).map((alert: any) => (
+            <div
+              key={alert.id}
+              className='rounded-lg border border-gray-200 p-3 dark:border-gray-700'
+            >
+              <div className='flex items-start gap-3'>
+                {/* Alert Thumbnail */}
+                <div className='h-12 w-16 flex-shrink-0 overflow-hidden rounded-md bg-gray-100 dark:bg-gray-800'>
+                  {alert.image_url ? (
+                    <img
+                      src={alert.image_url}
+                      alt={`Alert ${alert.alert_type?.name}`}
+                      className='h-full w-full cursor-pointer object-cover transition-transform hover:scale-105'
+                      onClick={() => onImageClick(alert.image_url)}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement
+                        target.style.display = 'none'
+                        const parent = target.parentElement
+                        if (parent) {
+                          parent.innerHTML = `
+                            <div class="flex h-full w-full items-center justify-center bg-gray-200 dark:bg-gray-700">
+                              <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.732 15.5c-.77.833.192 2.5 1.732 2.5z" />
+                              </svg>
+                            </div>
+                          `
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div className='flex h-full w-full items-center justify-center bg-gray-200 text-lg dark:bg-gray-700'>
+                      {getAlertIcon(alert.alert_type?.name)}
+                    </div>
+                  )}
+                </div>
+
+                <div className='min-w-0 flex-1'>
+                  <div className='flex items-start justify-between gap-3'>
+                    <div className='flex-1'>
+                      <h4 className='text-sm font-medium text-gray-900 dark:text-white'>
+                        {alert.alert_type?.name || 'Unknown Alert'}
+                      </h4>
+                      <p className='mt-1 line-clamp-2 text-xs text-gray-600 dark:text-gray-400'>
+                        {alert.message || 'Alert detected'}
+                      </p>
+                    </div>
+                    <div
+                      className={`rounded-full px-2 py-1 ${getSeverityColor(alert.severity)}`}
+                    >
+                      <span className='text-xs font-medium'>
+                        {alert.severity || 'Medium'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className='mt-2 flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400'>
+                    <span>Camera {alert.camera_id}</span>
+                    <span>{new Date(alert.detected_at).toLocaleString()}</span>
+                    {alert.is_active && (
+                      <span className='rounded-full bg-green-100 px-2 py-0.5 text-green-600 dark:bg-green-900/20 dark:text-green-400'>
+                        Active
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+          {alertsData.length === 0 && (
+            <div className='flex h-20 items-center justify-center text-gray-500'>
+              <p className='text-sm'>No recent alerts</p>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
 
 export default function Dashboard() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
@@ -737,7 +887,8 @@ export default function Dashboard() {
 
   const { cameras, loading: loadingCamera } = useCameras('active')
 
-  const activeFaceRecognitionCount = data.faceRecognitions?.count || 0
+  // const activeFaceRecognitionCount = data.faceRecognitions?.count || 0
+  const activeAlertsCount = data.activeAlert?.count || 0
 
   // Image viewer modal
   const ImageModal = ({
@@ -838,13 +989,21 @@ export default function Dashboard() {
             trendValue='+12.4%'
             description='Compared to yesterday'
           />
-          <SummaryCard
+          {/* <SummaryCard
             title='Active Face Recognition'
             value={activeFaceRecognitionCount.toString()}
             icon={UserCheck}
             trend={activeFaceRecognitionCount > 0 ? 'up' : 'down'}
             trendValue={activeFaceRecognitionCount > 0 ? `+${activeFaceRecognitionCount}` : '0'}
             description='Recent detections'
+          /> */}
+          <SummaryCard
+            title='Active Alerts'
+            value={activeAlertsCount.toString()}
+            icon={Shield}
+            trend={activeAlertsCount > 0 ? 'up' : 'down'}
+            trendValue={activeAlertsCount > 0 ? `+${activeAlertsCount}` : '0'}
+            description='Security alerts'
           />
           <SummaryCard
             title='Active Cameras'
@@ -864,7 +1023,12 @@ export default function Dashboard() {
         {/* Charts Grid */}
         <div className='grid grid-cols-2 gap-4'>
           <VisitorDistributionCard data={data} loading={loading} />
-          <RecentFaceRecognitionCard
+          {/* <RecentFaceRecognitionCard
+            data={data}
+            loading={loading}
+            onImageClick={setSelectedImage}
+          /> */}
+          <RecentAlertsCard
             data={data}
             loading={loading}
             onImageClick={setSelectedImage}
