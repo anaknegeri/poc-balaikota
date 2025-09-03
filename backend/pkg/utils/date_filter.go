@@ -42,6 +42,13 @@ func parseFlexibleDate(dateStr, fieldName string, isEndOfDay bool) (time.Time, e
 		return time.Time{}, nil // Empty date is allowed
 	}
 
+	// Load Asia/Jakarta timezone for Indonesian applications
+	jakartaTZ, _ := time.LoadLocation("Asia/Jakarta")
+	if jakartaTZ == nil {
+		// Fallback to UTC+7 if timezone loading fails
+		jakartaTZ = time.FixedZone("WIB", 7*60*60)
+	}
+
 	// List of supported date formats
 	formats := []string{
 		time.RFC3339,                // 2025-05-13T10:00:00Z
@@ -72,14 +79,17 @@ func parseFlexibleDate(dateStr, fieldName string, isEndOfDay bool) (time.Time, e
 		if err == nil {
 			// Successfully parsed
 			if format == "2006-01-02" || format == "20060102" || strings.Contains(format, "/") {
-				// For date-only formats, adjust time based on parameters
+				// For date-only formats, adjust time based on parameters and use Jakarta timezone
 				if isEndOfDay {
-					// Set to end of day
-					parsedTime = time.Date(parsedTime.Year(), parsedTime.Month(), parsedTime.Day(), 23, 59, 59, 999999999, parsedTime.Location())
+					// Set to end of day in Jakarta timezone
+					parsedTime = time.Date(parsedTime.Year(), parsedTime.Month(), parsedTime.Day(), 23, 59, 59, 999999999, jakartaTZ)
 				} else {
-					// Set to start of day
-					parsedTime = time.Date(parsedTime.Year(), parsedTime.Month(), parsedTime.Day(), 0, 0, 0, 0, parsedTime.Location())
+					// Set to start of day in Jakarta timezone
+					parsedTime = time.Date(parsedTime.Year(), parsedTime.Month(), parsedTime.Day(), 0, 0, 0, 0, jakartaTZ)
 				}
+			} else if parsedTime.Location() == time.UTC && !strings.Contains(dateStr, "Z") && !strings.Contains(dateStr, "+") && !strings.Contains(dateStr, "-") {
+				// If parsed as UTC but no timezone info in string, convert to Jakarta timezone
+				parsedTime = parsedTime.In(jakartaTZ)
 			}
 			return parsedTime, nil
 		}
@@ -91,6 +101,13 @@ func parseFlexibleDate(dateStr, fieldName string, isEndOfDay bool) (time.Time, e
 
 // parseFlexibleDateFallback handles special cases and partial date parsing
 func parseFlexibleDateFallback(dateStr, fieldName string, isEndOfDay bool) (time.Time, error) {
+	// Load Asia/Jakarta timezone for Indonesian applications
+	jakartaTZ, _ := time.LoadLocation("Asia/Jakarta")
+	if jakartaTZ == nil {
+		// Fallback to UTC+7 if timezone loading fails
+		jakartaTZ = time.FixedZone("WIB", 7*60*60)
+	}
+
 	// Handle timestamps with extra microseconds (like: 20250730_113717_045594)
 	if len(dateStr) > 15 && strings.Contains(dateStr, "_") {
 		parts := strings.Split(dateStr, "_")
@@ -101,7 +118,7 @@ func parseFlexibleDateFallback(dateStr, fieldName string, isEndOfDay bool) (time
 			// Try standard format first
 			parsedTime, err := time.Parse("20060102_150405", dateTimePart)
 			if err == nil {
-				return parsedTime, nil
+				return parsedTime.In(jakartaTZ), nil
 			}
 
 			// If that fails, try just the date part
@@ -109,7 +126,9 @@ func parseFlexibleDateFallback(dateStr, fieldName string, isEndOfDay bool) (time
 				parsedTime, err := time.Parse("20060102", parts[0])
 				if err == nil {
 					if isEndOfDay {
-						parsedTime = time.Date(parsedTime.Year(), parsedTime.Month(), parsedTime.Day(), 23, 59, 59, 999999999, parsedTime.Location())
+						parsedTime = time.Date(parsedTime.Year(), parsedTime.Month(), parsedTime.Day(), 23, 59, 59, 999999999, jakartaTZ)
+					} else {
+						parsedTime = time.Date(parsedTime.Year(), parsedTime.Month(), parsedTime.Day(), 0, 0, 0, 0, jakartaTZ)
 					}
 					return parsedTime, nil
 				}
@@ -160,26 +179,32 @@ func parseFlexibleDateFallback(dateStr, fieldName string, isEndOfDay bool) (time
 
 	// Handle relative dates (today, yesterday, etc.)
 	lower := strings.ToLower(strings.TrimSpace(dateStr))
-	now := time.Now()
+	// Load Asia/Jakarta timezone for Indonesian applications
+	jakartaTZ2, _ := time.LoadLocation("Asia/Jakarta")
+	if jakartaTZ2 == nil {
+		// Fallback to UTC+7 if timezone loading fails
+		jakartaTZ2 = time.FixedZone("WIB", 7*60*60)
+	}
+	now := time.Now().In(jakartaTZ2)
 
 	switch lower {
 	case "today", "now":
 		if isEndOfDay {
-			return time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 999999999, now.Location()), nil
+			return time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 999999999, jakartaTZ2), nil
 		}
-		return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()), nil
+		return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, jakartaTZ2), nil
 	case "yesterday":
 		yesterday := now.AddDate(0, 0, -1)
 		if isEndOfDay {
-			return time.Date(yesterday.Year(), yesterday.Month(), yesterday.Day(), 23, 59, 59, 999999999, yesterday.Location()), nil
+			return time.Date(yesterday.Year(), yesterday.Month(), yesterday.Day(), 23, 59, 59, 999999999, jakartaTZ2), nil
 		}
-		return time.Date(yesterday.Year(), yesterday.Month(), yesterday.Day(), 0, 0, 0, 0, yesterday.Location()), nil
+		return time.Date(yesterday.Year(), yesterday.Month(), yesterday.Day(), 0, 0, 0, 0, jakartaTZ2), nil
 	case "tomorrow":
 		tomorrow := now.AddDate(0, 0, 1)
 		if isEndOfDay {
-			return time.Date(tomorrow.Year(), tomorrow.Month(), tomorrow.Day(), 23, 59, 59, 999999999, tomorrow.Location()), nil
+			return time.Date(tomorrow.Year(), tomorrow.Month(), tomorrow.Day(), 23, 59, 59, 999999999, jakartaTZ2), nil
 		}
-		return time.Date(tomorrow.Year(), tomorrow.Month(), tomorrow.Day(), 0, 0, 0, 0, tomorrow.Location()), nil
+		return time.Date(tomorrow.Year(), tomorrow.Month(), tomorrow.Day(), 0, 0, 0, 0, jakartaTZ2), nil
 	}
 
 	// If all parsing attempts failed, return error with helpful message
