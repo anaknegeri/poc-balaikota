@@ -73,11 +73,16 @@ export function useCameraStream({
           // Parse JSON response: {"image": "jpg_as_text", "camera_id": 1}
           const data = JSON.parse(event.data)
 
-          if (
-            cameraId !== undefined &&
-            data.camera_id !== undefined &&
-            data.camera_id !== cameraId - 1
-          ) {
+          // if (
+          //   cameraId !== undefined &&
+          //   data.camera_id !== undefined &&
+          //   data.camera_id !== cameraId - 1
+          // ) {
+          //   return
+          // }
+
+          if (data.image === undefined) {
+            console.warn('Received WebSocket message without image field')
             return
           }
 
